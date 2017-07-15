@@ -111,9 +111,9 @@ CONST std::vector<int>* GetShapeVec(_In_ em_Shape emShape, _In_ em_Dir emDir)
 		ShapePoint{ em_Shape_Z_Reverse, em_Dir_Bottom, { 4, 8, 9, 13 } },
 
 		ShapePoint{ em_Share_L, em_Dir_Left, { 10, 12, 13, 14 } },
-		ShapePoint{ em_Share_L, em_Dir_Top, { 4, 8, 9, 13 } },
-		ShapePoint{ em_Share_L, em_Dir_Right, { 9, 10, 12, 13 } },
-		ShapePoint{ em_Share_L, em_Dir_Bottom, { 4, 8, 9, 13 } },
+		ShapePoint{ em_Share_L, em_Dir_Top, { 4, 8, 12, 13 } },
+		ShapePoint{ em_Share_L, em_Dir_Right, { 8, 9, 10, 12 } },
+		ShapePoint{ em_Share_L, em_Dir_Bottom, { 4, 5, 9, 13 } },
 
 		ShapePoint{ em_Shape_L_Reverse, em_Dir_Left, { 5, 9, 12, 13 } },
 		ShapePoint{ em_Shape_L_Reverse, em_Dir_Top, { 8, 12, 13, 14 } },
@@ -136,7 +136,7 @@ CONST std::vector<int>* GetShapeVec(_In_ em_Shape emShape, _In_ em_Dir emDir)
 		ShapePoint{ em_Shape_Line, em_Dir_Bottom, { 12, 13, 14, 15 } },
 	};
 	
-	auto pShapePoint = CLPublic::Vec_find_if_Const(VecShapePoint, [emShape, emDir](CONST ShapePoint& ShapePoint_){ return ShapePoint_.emShape == emShape && ShapePoint_.emShapeDir == emDir; });
+	auto pShapePoint = MyTools::CLPublic::Vec_find_if_Const(VecShapePoint, [emShape, emDir](CONST ShapePoint& ShapePoint_){ return ShapePoint_.emShape == emShape && ShapePoint_.emShapeDir == emDir; });
 	return pShapePoint == nullptr ? nullptr : &pShapePoint->VecPoint;
 }
 
@@ -164,7 +164,7 @@ WORD GetColorByShape(_In_ em_Shape emShape_)
 		{ em_Shape_Line, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED },
 	};
 
-	auto pShapeColor = CLPublic::Vec_find_if_Const(VecShapeColor, [emShape_](CONST ShapeColor& ShapeColor_){ return ShapeColor_.emShape == emShape_; });
+	auto pShapeColor = MyTools::CLPublic::Vec_find_if_Const(VecShapeColor, [emShape_](CONST ShapeColor& ShapeColor_){ return ShapeColor_.emShape == emShape_; });
 	return pShapeColor == nullptr ? FOREGROUND_RED : pShapeColor->wColor;
 }
 
@@ -177,7 +177,7 @@ void PrintSingleShape(_In_ CONST Point& Tar, _In_ WORD wColor, _In_ em_PrintShap
 	::SetConsoleTextAttribute(hConsole, wColor);
 
 	// Set Current Pos to Position
-	COORD Pos = { Tar.X * 2, Tar.Y };
+	COORD Pos = { static_cast<decltype(COORD::X)>(Tar.X * 2), static_cast<decltype(COORD::Y)>(Tar.Y) };
 	::SetConsoleCursorPosition(hConsole, Pos);
 
 	switch (emPrintShape)
@@ -199,13 +199,13 @@ void PrintSingleShape(_In_ CONST Point& Tar, _In_ WORD wColor, _In_ em_PrintShap
 void PrintWall()
 {
 	// Left Wall
-	for (int i = 0; i < 26 ; ++i)
+	for (int i = 0; i < g_nMaxY + 1; ++i)
 	{
 		PrintSingleShape(Point(g_nMinX - 1, i), FOREGROUND_GREEN, em_PrintShape_Wall);
 	}
 
 	// Right Wall
-	for (int i = 0; i < 26; ++i)
+	for (int i = 0; i < g_nMaxY + 1; ++i)
 	{
 		PrintSingleShape(Point(g_nMaxX + 1, i), FOREGROUND_GREEN, em_PrintShape_Wall);
 	}
@@ -218,6 +218,11 @@ void PrintWall()
 			TetrisShapeArray[i][j] = NULL;
 		}
 	}
+}
+
+BOOL ExistInChess(_In_ CONST Point& Pos)
+{
+	return Pos.X <= g_nMaxX && Pos.X >= g_nMinX && Pos.Y >= g_nMinY && Pos.Y <= g_nMaxY;
 }
 
 void PrintFullShape(_In_ CONST TetrisShape& TetrisShape_, _In_ em_PrintShape emPrintShape)
@@ -236,19 +241,19 @@ void PrintFullShape(_In_ CONST TetrisShape& TetrisShape_, _In_ em_PrintShape emP
 	{
 		Pos = TetrisShape_.Pos;
 		Pos.SetPointByIndex(nIndex);
-		if (Pos.X > g_nMaxX || Pos.X < g_nMinX || Pos.Y < g_nMinY)
-			continue;
 
-		PrintSingleShape(Pos, TetrisShape_.wColor, emPrintShape);
+		if (ExistInChess(Pos))
+			PrintSingleShape(Pos, TetrisShape_.wColor, emPrintShape);
 	}
 }
 
 em_Result CreateTetrisShape(_Out_opt_ TetrisShape& TetrisShape_)
 {
 	// Show rand location on Top 
-	TetrisShape_.Pos = Point(CCharacter::GetRand(g_nMaxX / 2, g_nMinX * 2), g_nMinY - 3);
-	TetrisShape_.emShape = static_cast<em_Shape>(CCharacter::GetRand(6, 0));
-	TetrisShape_.emShapeDir = static_cast<em_Dir>(CCharacter::GetRand(3, 0));
+	TetrisShape_.Pos = Point(MyTools::CCharacter::GetRand(g_nMaxX / 2, g_nMinX * 2), g_nMinY - 3);
+	TetrisShape_.emShape = static_cast<em_Shape>(MyTools::CCharacter::GetRand(6, 0));
+	TetrisShape_.emShape = em_Shape::em_Share_L;
+	TetrisShape_.emShapeDir = static_cast<em_Dir>(MyTools::CCharacter::GetRand(3, 0));
 	TetrisShape_.wColor = GetColorByShape(TetrisShape_.emShape);
 
 	auto pVecPoint = GetShapeVec(TetrisShape_);
@@ -280,7 +285,7 @@ em_Result IsCollision(_In_ CONST TetrisShape& TetrisShape_, _In_ em_Dir emDir)
 
 	// Is Exist Pos in VecTetisShape
 	Point Pos = NextPoint;
-	auto p = CLPublic::Vec_find_if_Const(TetrisShape_.VecShapePoint, [&Pos, NextPoint](int nIndex)
+	auto p = MyTools::CLPublic::Vec_find_if_Const(TetrisShape_.VecShapePoint, [&Pos, NextPoint](int nIndex)
 	{
 		Pos = NextPoint;
 		Pos.SetPointByIndex(nIndex);
@@ -293,7 +298,7 @@ em_Result IsCollision(_In_ CONST TetrisShape& TetrisShape_, _In_ em_Dir emDir)
 
 BOOL IsInWall(_In_ CONST std::vector<int>& VecShapePoint, _In_ CONST Point& CurPoint)
 {
-	return CLPublic::Vec_find_if_Const(VecShapePoint, [CurPoint](int nIndex)
+	return MyTools::CLPublic::Vec_find_if_Const(VecShapePoint, [CurPoint](int nIndex)
 	{
 		Point Pos = CurPoint;
 		Pos.SetPointByIndex(nIndex);
@@ -353,7 +358,7 @@ em_Result ChangeShapeDirection(_In_ _Out_ TetrisShape& TetrisShape_)
 		{ 2, em_Dir_Bottom }, { 3, em_Dir_Left },
 	};
 
-	auto pCurrentShapeDir = CLPublic::Vec_find_if_Const(VecShapeDir, [TetrisShape_](_In_ CONST ShapeDir& ShapeDir_){ return ShapeDir_.emShapeDir == TetrisShape_.emShapeDir; });
+	auto pCurrentShapeDir = MyTools::CLPublic::Vec_find_if_Const(VecShapeDir, [TetrisShape_](_In_ CONST ShapeDir& ShapeDir_){ return ShapeDir_.emShapeDir == TetrisShape_.emShapeDir; });
 	if (pCurrentShapeDir == nullptr)
 	{
 		ShowErr(L"UnExist emShapeDir=%X in VecShapeDir", TetrisShape_.emShapeDir);
@@ -361,7 +366,7 @@ em_Result ChangeShapeDirection(_In_ _Out_ TetrisShape& TetrisShape_)
 	}
 
 	int nNextIndex = pCurrentShapeDir->nIndex == 3 ? 0 : pCurrentShapeDir->nIndex + 1;
-	auto pNextShapeDir = CLPublic::Vec_find_if_Const(VecShapeDir, [nNextIndex](_In_ CONST ShapeDir& ShapeDir_){ return nNextIndex == ShapeDir_.nIndex; });
+	auto pNextShapeDir = MyTools::CLPublic::Vec_find_if_Const(VecShapeDir, [nNextIndex](_In_ CONST ShapeDir& ShapeDir_){ return nNextIndex == ShapeDir_.nIndex; });
 	if (pNextShapeDir == nullptr)
 	{
 		ShowErr(L"UnExist Index=%d in VecShapeDir", nNextIndex);
@@ -442,8 +447,152 @@ VOID AddToTetrisShapeArray(_In_ CONST TetrisShape& TetrisShape_)
 	}
 }
 
-VOID ResponeKeyboard(_In_ _Out_ TetrisShape& CurrentTetrisShape)
+BOOL CheckNewShape(_In_ CONST TetrisShape& CurrentTetrisShape)
 {
+	auto tmpTetrishShape = CurrentTetrisShape;
+	ChangeShapeDirection(tmpTetrishShape);
+
+	for (CONST auto& itm : tmpTetrishShape.VecShapePoint)
+	{
+		auto Pos = tmpTetrishShape.Pos;
+		Pos.SetPointByIndex(itm);
+		
+		if (TetrisShapeArray[Pos.Y - 1][Pos.X - 1] != NULL)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+BOOL IsEmptyX(int Y)
+{
+	for (auto X = 0; X < g_nMaxX; ++X)
+	{
+		if (TetrisShapeArray[Y][X] != NULL)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+std::vector<int> GetUnEmptyLatticeX(int Y)
+{
+	std::vector<int> Vec;
+	for (auto X = 0; X < g_nMaxX; ++X)
+	{
+		if (TetrisShapeArray[Y][X] != NULL)
+			Vec.push_back(X);
+	}
+
+	return std::move(Vec);
+}
+
+int GetUnEmptyChessIndex()
+{
+	for (auto Y = g_nMaxY - 1; Y > 0; --Y) // Did't Check First Floor
+	{
+		if (IsEmptyX(Y))
+			break;
+		
+		auto&& Vec = GetUnEmptyLatticeX(Y);
+
+		// Check Front of Floor Is Wall
+		for (CONST auto& itm : Vec)
+		{
+			if (TetrisShapeArray[Y - 1][itm] == NULL)
+				return Y;
+		}
+	}
+	return g_nMaxY - 1;
+}
+
+int GetMaxEmptyLatticeIndex(int& X, int Y)
+{
+	return X < g_nMaxX && TetrisShapeArray[Y][X] == NULL ? GetMaxEmptyLatticeIndex(++X, Y) : X;
+}
+
+enum em_Lattice
+{
+	em_Lattice_4,
+	em_Lattice_3,
+	em_Lattice_2,
+	em_Lattice_1
+};
+
+struct LatticePoint
+{
+	Point      Pos;
+	em_Lattice emLattice;
+
+	LatticePoint() = default;
+};
+// Create Useful Point which Empty like |¡ö|X|¡ö|¡ö|¡ö|¡ö|¡ö|¡ö|¡ö|¡ö|¡ö|¡ö| return Point 'X'
+std::vector<LatticePoint> CreateEmptyLocationPoint()
+{
+	std::vector<LatticePoint> Vec;
+	int nIndex = GetUnEmptyChessIndex();
+	for (int X = 0; X < g_nMaxX; ++X)
+	{
+		if(TetrisShapeArray[nIndex][X] != NULL)
+			continue;
+
+		LatticePoint Lap;
+		int tmpX = X;
+		X = GetMaxEmptyLatticeIndex(++X, nIndex);
+		Lap.Pos = Point(nIndex + 1, X + 1);
+
+		if (X - tmpX > 4)
+		{
+			X = tmpX + 3;
+			Lap.emLattice = em_Lattice::em_Lattice_4;
+			Vec.push_back(std::move(Lap));
+			continue;
+		}
+
+		switch (X - tmpX)
+		{
+		case 1:
+			Lap.emLattice = em_Lattice::em_Lattice_1;
+			Vec.push_back(std::move(Lap));
+			break;
+		case 2:
+			Lap.emLattice = em_Lattice::em_Lattice_2;
+			Vec.push_back(std::move(Lap));
+			break;
+		case 3:
+			Lap.emLattice = em_Lattice::em_Lattice_3;
+			Vec.push_back(std::move(Lap));
+			break;
+		case 4:
+			Lap.emLattice = em_Lattice::em_Lattice_4;
+			Vec.push_back(std::move(Lap));
+			break;
+		default:
+			break;
+		}
+	}
+
+	return std::move(Vec);
+}
+
+
+
+BOOL TetrisAI(_In_ TetrisShape& CurrentTetrisShape)
+{
+	auto&& Vec = CreateEmptyLocationPoint();
+	if (Vec.size() == 0)
+		return FALSE;
+
+	// Fill More Lattice First.  4 > 3 > 2 > 1
+	 
+
+	return TRUE;
+}
+
+BOOL ResponeKeyboard(_In_ _Out_ TetrisShape& CurrentTetrisShape)
+{
+	TetrisAI(CurrentTetrisShape);
+
 	if (_kbhit())
 	{
 		int nValue1 = _getch();
@@ -466,7 +615,7 @@ VOID ResponeKeyboard(_In_ _Out_ TetrisShape& CurrentTetrisShape)
 				break;
 			}
 		}
-		else if (nValue1 == VK_SPACE)
+		else if (nValue1 == VK_SPACE && CheckNewShape(CurrentTetrisShape))
 		{
 			// Clear Old Shape before Overwrite VecShapePoint
 			PrintFullShape(CurrentTetrisShape, em_PrintShape::em_PrintShape_Empty);
@@ -475,12 +624,15 @@ VOID ResponeKeyboard(_In_ _Out_ TetrisShape& CurrentTetrisShape)
 			// Write New Shape
 			PrintFullShape(CurrentTetrisShape, em_PrintShape::em_PrintShape_Square);
 		}
+		return TRUE;
 	}
+	return FALSE;
 }
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	SetConsole_Language_CHINA;
+	MyTools::CCharacter::SetConsoleLanguage();
+	MyTools::CCharacter::SetSpecialCharacterMode();
 
 	CONSOLE_CURSOR_INFO cursor_info = { 1, 0 };
 	::SetConsoleCursorInfo(::GetStdHandle(STD_OUTPUT_HANDLE), &cursor_info);
@@ -496,15 +648,15 @@ int _tmain(int argc, _TCHAR* argv[])
 		ResponeKeyboard(CurrentTetrisShape);
 		if (static_cast<DWORD>(::GetTickCount64() - ulTick) >= 300)
 		{
-			ResetShapeDir(CurrentTetrisShape, em_Dir::em_Dir_Bottom);
+			//ResetShapeDir(CurrentTetrisShape, em_Dir::em_Dir_Bottom);
 			if (IsUnderFloor(CurrentTetrisShape) == em_Result::em_Result_TRUE)
 			{
 				// check user input in 500ms
-				for (int i = 0; i < 5; ++i)
+				/*for (int i = 0; i < 5; ++i)
 				{
 					ResponeKeyboard(CurrentTetrisShape);
 					::Sleep(100);
-				}
+				}*/
 				AddToTetrisShapeArray(CurrentTetrisShape);
 				RemoveFullofLine();
 

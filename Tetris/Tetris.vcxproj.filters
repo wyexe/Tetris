@@ -57,12 +57,6 @@
     <ClInclude Include="..\..\MyTools\MyTools\CLThread.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\MyTools\MyTools\CLLog.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MyTools\MyTools\CLStackTrace.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\MyTools\MyTools\CLFile.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -96,12 +90,6 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\MyTools\MyTools\CLThread.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\MyTools\MyTools\CLLog.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\MyTools\MyTools\CLStackTrace.cpp">
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\MyTools\MyTools\CLFile.cpp">

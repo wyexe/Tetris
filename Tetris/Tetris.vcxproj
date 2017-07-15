@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,13 +19,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -87,9 +87,7 @@
     <ClInclude Include="..\..\MyTools\MyTools\CLExpressionCalc.h" />
     <ClInclude Include="..\..\MyTools\MyTools\CLFile.h" />
     <ClInclude Include="..\..\MyTools\MyTools\CLLock.h" />
-    <ClInclude Include="..\..\MyTools\MyTools\CLLog.h" />
     <ClInclude Include="..\..\MyTools\MyTools\CLPublic.h" />
-    <ClInclude Include="..\..\MyTools\MyTools\CLStackTrace.h" />
     <ClInclude Include="..\..\MyTools\MyTools\CLThread.h" />
     <ClInclude Include="..\..\MyTools\MyTools\Log.h" />
     <ClInclude Include="..\..\MyTools\MyTools\TimeTick.h" />
@@ -103,8 +101,6 @@
     <ClCompile Include="..\..\MyTools\MyTools\CLExpressionCalc.cpp" />
     <ClCompile Include="..\..\MyTools\MyTools\CLFile.cpp" />
     <ClCompile Include="..\..\MyTools\MyTools\CLLock.cpp" />
-    <ClCompile Include="..\..\MyTools\MyTools\CLLog.cpp" />
-    <ClCompile Include="..\..\MyTools\MyTools\CLStackTrace.cpp" />
     <ClCompile Include="..\..\MyTools\MyTools\CLThread.cpp" />
     <ClCompile Include="..\..\MyTools\MyTools\CPublic.cpp" />
     <ClCompile Include="..\..\MyTools\MyTools\Log.cpp" />

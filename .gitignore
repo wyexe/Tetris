@@ -187,3 +187,7 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/.vs/Tetris/v15/Browse.VC.db
+/Tetris.VC.db
+/.vs/config/applicationhost.config
+*.opendb
